@@ -7,3 +7,6 @@ Coinmarketcap API plans. Upon successfully running the script, one credit from y
 additional credit will be used for every 100 coins returned (rounded up) per use. All monetary values outputted are in dollars (USD).
 
 For complete Coinmarketcap API documentation, or to sign up for a Coinmarketcap developer account, visit https://pro.coinmarketcap.com/.
+
+KNOWN BUGS:
+• After successfully starting the script, hitting <Enter> before entering any other additional coin information will throw a TypeError.  
