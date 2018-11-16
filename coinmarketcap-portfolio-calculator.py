@@ -1,5 +1,6 @@
 import requests
 import datetime
+import sys
 
 
 class CoinMarketCap:
@@ -13,10 +14,10 @@ class CoinMarketCap:
         self.myAPIkey = APIkey
 
     def AddCreditCount(self, getRequest):
+        """Add count of credits used to total amount of Coinmarketcap credits used."""
         status = getRequest.get('status')
         creditCount = status.get('credit_count')
         self.creditsUsed = self.creditsUsed + creditCount
-
 
     def Get_JSON_Response(self, url):
         """Returns JSON response from a .get() request to a API coinmarketcap url with the API key header added.
@@ -26,13 +27,13 @@ class CoinMarketCap:
         return response
 
     def ParseDataFrom_JSON_Response(self, url):
-        """Returns the value of the 'data' dictionary returned by the Get_JSON_CMC_Response() method."""
+        """Returns the value of the 'data' dictionary returned by the Get_JSON_Response() method."""
         jsonResponse = CoinMarketCap.Get_JSON_Response(self, url)
         data = jsonResponse.get('data')
         return data
 
     def GetListOfCoinIdentifiers(self):
-        """Returns a list containing embedded lists. Each embedded list contains the Coinmarketcap id, name, and ticker
+        """Returns a list containing embedded lists. Each embedded list contains the Coinmarketcap ID, name, and ticker
         for a single cryptocurrency. This will use one call credit."""
         coinData = CoinMarketCap.ParseDataFrom_JSON_Response(self, self.mapURL)
         coinList = []
@@ -50,7 +51,7 @@ class CoinMarketCap:
         the Coinmarketcap ID. If being used for multiple currencies, the 'coinID' parameter must be one or more
         comma-seperated Coinmarketcap IDs (example: 1,2,3). This method will use one call credit per 100 cryptocurrencies
         returned (rounded up)."""
-        coinData = CoinMarketCap.ParseDataFrom_JSON_Response(CoinMarketCap, self.latestQuotesURL + "?id=" + coinID)
+        coinData = CoinMarketCap.ParseDataFrom_JSON_Response(self, self.latestQuotesURL + '?id=' + coinID)
         if coinData:
             return coinData
         return False
@@ -128,7 +129,7 @@ class Portfolio:
         """Return the name of a coin with the ticker in parenthesis."""
         name = Coin.FindName(Coin, input)
         ticker = Coin.FindTicker(Coin, input)
-        return name + "(" + ticker + ")"
+        return name + '(' + ticker + ')'
 
     def AskForQuantity(self, coin):
         """Ask for the quantity of the cryptocurrency passed through the 'coin' parameter."""
@@ -148,7 +149,7 @@ class Portfolio:
     def CreateQuantityDict(self, coin, quantity):
         """Create a dictionary containing the Coinmarketcap ID and the entered quantity for a coin."""
         coinID = Coin.FindCoinMarketCapID(Coin, coin)
-        quantityDict = {'id': coinID, 'quantity': quantity}
+        quantityDict = {"id": coinID, "quantity": quantity}
         return quantityDict
 
     def AskForUserInput(self):
@@ -180,7 +181,7 @@ class Portfolio:
         listOfIDs = []
         comma = ','
         for dicts in inputList:
-            listOfIDs.append(dicts.get('id'))
+            listOfIDs.append(dicts.get("id"))
         string = comma.join(listOfIDs)
         return string
 
@@ -236,23 +237,26 @@ def PrintCoinData(coin):
     quantity = coin.get('quantity')
     value = Calculator.OneCoinValue(Calculator, coin)
     print(
-        name + "(" + ticker + "):\n",
-        "Rank: " + str(rank) + "\n",
+        name + '(' + ticker + '):\n',
+        'Rank: ' + str(rank) + "\n",
         "Price: $" + format(price, ',.2f') + " (" + percentChange24H + ")\n",
         "Quantity: " + format(quantity, ',.8f') + "\n",
         "Value: $" + format(value, ',.2f'),
         "\n")
 
-
 def main():
     userInput = Portfolio.AskForUserInput(Portfolio)
+    if len(userInput) is 0:
+        print("\nNo coins selected.")
+        print("Credits used:", CoinMarketCap.creditsUsed)
+        sys.exit()
     portfolio = Portfolio.AddQuantityToPortfolio(Portfolio, userInput)
     totalValue = Calculator.TotalCoinValue(Calculator, portfolio)
     print("\nMY PORTFOLIO SUMMARY:\n")
     for coins in portfolio:
         PrintCoinData(coins)
     print("Total value: $" + totalValue, '\n')
-    print("Total credits used: ", CoinMarketCap.creditsUsed)
+    print("Total credits used:", CoinMarketCap.creditsUsed)
     print("Last updated " + str(datetime.datetime.now()))
 
 main()
